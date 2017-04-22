@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
-public class hangmanRunner { //version with char array
+public class hangmanNoArray { 
 
 	public static void main(String[] args) throws FileNotFoundException {
 		
@@ -23,29 +23,30 @@ public class hangmanRunner { //version with char array
 		//word
 		String word = grabRandomWord(wordList);
 //		System.out.println(word); //tester
-		char[] words = new char[word.length()];
-		for (int i = 0; i < word.length(); i++) {
-			words[i] = word.charAt(i);
-		}
+
 		
 		
 		//guessWord
-		char[] guessWord = new char[word.length()];
+		String guessWord = "";
 		for (int i = 0; i < word.length(); i++) {
-			guessWord[i] = '_';
+			guessWord += '_';
+		}
+	
+
+		//keeps track of all used letters
+		String alphabet = "";
+		for (int i = 0; i < 26; i++) {
+			char letter = (char) ('a' + i);
+			alphabet += letter;
+			alphabet += " ";
 		}
 		
-		//if a letter has been guessed, index of letter is set to true
-		boolean[] alphabetGuesses = new boolean[26]; 
-		
-		
-
 		
 		//first instance of game:
-		printAlphabetGuesses(alphabetGuesses);
+		System.out.println(alphabet);
 		
 		System.out.println("\nMystery word:");
-		printCharArray(guessWord);
+		print(guessWord);
 		
 		//variables to keep track of win/lose conditions of hangman
 		boolean hangmanNotDead = true;
@@ -59,25 +60,28 @@ public class hangmanRunner { //version with char array
 			
 			Scanner keyboard = new Scanner(System.in);
 			System.out.println("\nGuess a letter.");
-			String letter = keyboard.nextLine(); //HOW DO MAKE SCANNER ONLY INPUT A CHAR?
+			String userInput = keyboard.nextLine(); //HOW DO MAKE SCANNER ONLY INPUT A CHAR?
+			char letter = userInput.charAt(0);
 			
-			alphabetGuesses[letter.charAt(0) - 'a'] = true; 
+			alphabet = updateAlphabet(alphabet, letter);
+			
 			
 			boolean letterInWord = false;
-			for (int i = 0; i < words.length; i++) { //parse actual word, if letter is in word, set the
-				if (letter.charAt(0) == (words[i])) {		//letter to display on guessWord.
-					guessWord[i] = words[i];
-					letterInWord = true;
-					score += 10;
-				}
+									
+			if (word.indexOf(letter) != - 1) {		
+				guessWord = updateGuessWord(word, guessWord, letter);
+				letterInWord = true;
+				score += 10;
 			}
-		
 			
+			System.out.println(guessWord);
+	
 			clearConsole();
-			printAlphabetGuesses(alphabetGuesses);
+			System.out.println(alphabet);
 			System.out.println();
+			
 			System.out.println("Mystery word:");
-			printCharArray(guessWord);
+			print(guessWord);
 			
 			if (!letterInWord) {
 				System.out.println("\nThe letter " + letter + " is not in the word");
@@ -109,12 +113,17 @@ public class hangmanRunner { //version with char array
 			}
 			System.out.println("Score: " + score);
 		}
-		
-		
-			
-		
+	
 }
 
+	public static void print(String word) { //just adds some space between letters because it looks better
+		String result = "";
+		for (int i = 0; i < word.length(); i++) {
+			result += word.charAt(i);
+			result += " ";
+		}
+		System.out.println(result);
+	}
 	
 	public static String grabRandomWord(ArrayList<String> wordList) {
 		Random random = new Random();
@@ -125,27 +134,20 @@ public class hangmanRunner { //version with char array
 		return randomWord;	
 	}
 	
-	public static void printCharArray(char[] array) {
-		String word = "";
-		for (int i = 0; i < array.length; i++) {
-			word += array[i] + " ";
-		}
-		System.out.println(word);
-	}
-	
-	public static void printAlphabetGuesses(boolean[] alphabetGuesses) {
-		System.out.println("Available letters:");
-		for (int i = 0; i < alphabetGuesses.length; i++) {
-			if (alphabetGuesses[i] == true) {
-				System.out.print("_ ");
-			} else {
-				char letter = (char) ('a' + i);
-				System.out.print(letter + " ");
+	public static String updateGuessWord(String word, String guessWord, char letter) {
+		for (int i = 0; i < word.length(); i++) {
+			if (word.charAt(i) == letter) {
+				guessWord = guessWord.substring(0,i) + letter + guessWord.substring(i+1);
 			}
 		}
-		
-		System.out.println();
-		
+		return guessWord;
+	}
+	
+	public static String updateAlphabet(String alphabet, char letter) {
+		int index = alphabet.indexOf(letter);
+		String newAlphabet = "";
+		newAlphabet = alphabet.substring(0, index) + "_" + alphabet.substring(index+1);
+		return newAlphabet;
 	}
 	
 	public static void clearConsole () { //kind of, not really.
@@ -154,9 +156,9 @@ public class hangmanRunner { //version with char array
 		}
 	}
 	
-	public static boolean gameWon(char[] guessWord) {
-		for (char c : guessWord) {
-			if (c == '_') {
+	public static boolean gameWon(String guessWord) {
+		for (int i = 0; i < guessWord.length(); i++) {
+			if (guessWord.charAt(i) == '_') {
 				return false;
 			}
 		}
